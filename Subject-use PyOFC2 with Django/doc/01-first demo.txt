@@ -1,0 +1,82 @@
+
+一.安装
+git clone git://github.com/btbytes/pyofc2.git 
+1.readme
+Installation
+------------
+
+Using `Python Packaging Index <http://pypi.python.org>`_:
+
+    $ easy_install PyOFC2
+    
+From the source:
+
+    $ git://github.com/btbytes/pyofc2.git
+    
+Online `Demo <http://btbytes.github.com/pyofc2/>`_.
+
+
+Using PyOFC2 with Web Frameworks
+--------------------------------
+`Django + PyOFC2 <http://github.com/btbytes/djofc2_demo>`_ example project.
+
+
+二.报错处理
+    from django.core.management import execute_manager
+ImportError: cannot import name 'execute_manager'
+
+原因是django1.6中没有execute_manager
+
+修改1
+from django.core.management import execute_from_command_line
+if __name__ == "__main__":
+    execute_from_command_line(settings)
+
+报错:
+    execute_from_command_line(settings)
+  File "C:\software\Anaconda3\lib\site-packages\django\core\management\__init__.py", line 362, in execute_from_command_line
+    utility = ManagementUtility(argv)
+  File "C:\software\Anaconda3\lib\site-packages\django\core\management\__init__.py", line 139, in __init__
+    self.prog_name = os.path.basename(self.argv[0])
+TypeError: 'module' object is not subscriptable
+
+修改2:
+import os
+import sys
+
+if __name__ == "__main__":
+    os.environ.setdefault("DJANGO_SETTINGS_MODULE", "MardownBlog.settings")
+    try:
+        from django.core.management import execute_from_command_line
+    except ImportError:
+        # The above import may fail for some other reason. Ensure that the
+        # issue is really that Django is missing to avoid masking other
+        # exceptions on Python 2.
+        try:
+            import django
+        except ImportError:
+            raise ImportError(
+                "Couldn't import Django. Are you sure it's installed and "
+                "available on your PYTHONPATH environment variable? Did you "
+                "forget to activate a virtual environment?"
+            )
+        raise
+    execute_from_command_line(sys.argv)
+
+
+    三.url设置
+    # the chart data views
+urlpatterns = patterns('demoapp.views',
+    ('^data/$','chart_data'),   
+)
+# the front page
+urlpatterns += patterns('django.views.generic.simple',
+    (r'^$', 'direct_to_template', {'template': 'index.html'}),
+)  
+                
+# serve static content
+baseurlregex = r'^static/(?P<path>.*)$'
+urlpatterns += patterns('',
+    (baseurlregex, 'django.views.static.serve',
+    {'document_root':  settings.MEDIA_ROOT}),
+)
