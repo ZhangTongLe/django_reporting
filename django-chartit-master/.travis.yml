@@ -1,0 +1,51 @@
+after_success:
+- coveralls
+before_install:
+- pip install coveralls
+- if [ -z "$_COMMAND" ]; then export _COMMAND=coverage; fi
+- if [ -z "$_DJANGO" ]; then export _DJANGO=1.10.4; fi
+cache: pip
+env:
+- !!python/unicode '_DJANGO=1.10'
+- !!python/unicode '_DJANGO=1.10.2'
+- !!python/unicode '_DJANGO=1.10.3'
+- !!python/unicode '_DJANGO=1.10.4'
+- !!python/unicode '_DJANGO=1.10.5'
+- !!python/unicode '_DJANGO=1.10.6'
+- !!python/unicode '_DJANGO=1.10.7'
+- !!python/unicode '_DJANGO=1.11'
+- !!python/unicode '_DJANGO=1.11.1'
+- !!python/unicode '_DJANGO=1.11.3'
+- !!python/unicode '_DJANGO=1.11.4'
+- !!python/unicode '_DJANGO=1.11a1'
+- !!python/unicode '_DJANGO=1.11b1'
+- !!python/unicode '_DJANGO=1.11rc1'
+- !!python/unicode '_DJANGO=1.8.14'
+- !!python/unicode '_DJANGO=1.8.15'
+- !!python/unicode '_DJANGO=1.8.16'
+- !!python/unicode '_DJANGO=1.8.17'
+- !!python/unicode '_DJANGO=1.8.18'
+- !!python/unicode '_DJANGO=1.9.10'
+- !!python/unicode '_DJANGO=1.9.11'
+- !!python/unicode '_DJANGO=1.9.12'
+- !!python/unicode '_DJANGO=1.9.13'
+- !!python/unicode '_DJANGO=1.9.8'
+- !!python/unicode '_DJANGO=1.9.9'
+install:
+- pip install Django==$_DJANGO
+- pip install -e .
+- pip install -r requirements.txt
+language: python
+matrix:
+  include:
+  - env: _COMMAND=pylint
+    python: 3.5
+notifications:
+  email:
+    on_failure: change
+    on_success: change
+python:
+- 2.7
+- 3.4
+- 3.5
+script: make $_COMMAND
