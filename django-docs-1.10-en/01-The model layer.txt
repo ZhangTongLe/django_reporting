@@ -1,0 +1,35 @@
+一.Models
+(一)Introduction to models
+1.
+Each model is a Python class that subclasses django.db.models.Model
+Each attribute of the model represents a database field
+2.Quick example
+(1)
+from django.db import models
+class Person(models.Model):
+    first_name = models.CharField(max_length=30)
+    last_name = models.CharField(max_length=30)
+
+3.using modles
+(1)the package structure that is created for an application by the manage.py startapp script
+INSTALLED_APPS = [
+    #...
+    'myapp',
+    #...
+]
+(2)When you add new apps to INSTALLED_APPS, be sure to run manage.py migrate, optionally making migrations for them first with manage.py makemigrations.
+3.Fields
+(1) not to choose field names that conflict with the models API like clean, save, or delete.
+(2)两个表的关系:
+from django.db import models
+
+class Musician(models.Model):
+    first_name = models.CharField(max_length=50)
+    last_name = models.CharField(max_length=50)
+    instrument = models.CharField(max_length=100)
+
+class Album(models.Model):
+    artist = models.ForeignKey(Musician, on_delete=models.CASCADE)
+    name = models.CharField(max_length=100)
+    release_date = models.DateField()
+    num_stars = models.IntegerField()
