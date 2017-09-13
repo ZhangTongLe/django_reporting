@@ -55,3 +55,193 @@ urlpatterns = [
     # ... snip ...
 ]
 
+
+例子2
+from django.conf.urls import include, url
+
+from apps.main import views as main_views
+from credit import views as credit_views
+
+extra_patterns = [
+    url(r'^reports/$', credit_views.report),
+    url(r'^reports/(?P<id>[0-9]+)/$', credit_views.report),
+    url(r'^charge/$', credit_views.charge),
+]
+
+urlpatterns = [
+    url(r'^$', main_views.homepage),
+    url(r'^help/', include('apps.help.urls')),
+    url(r'^credit/', include(extra_patterns)),
+]
+
+# /credit/reports/   credit_views.report() 
+
+from django.conf.urls import include, url
+from . import views
+
+urlpatterns = [
+    url(r'^(?P<page_slug>[\w-]+)-(?P<page_id>\w+)/', include([
+        url(r'^history/$', views.history),
+        url(r'^edit/$', views.edit),
+        url(r'^discuss/$', views.discuss),
+        url(r'^permissions/$', views.permissions),
+    ])),
+]
+
+(六)Captured parameters
+
+An included URLconf receives any captured parameters from parent URLconfs, so the following example is valid:
+
+# In settings/urls/main.py
+from django.conf.urls import include, url
+
+urlpatterns = [
+    url(r'^(?P<username>\w+)/blog/', include('foo.urls.blog')),
+]
+
+# In foo/urls/blog.py
+from django.conf.urls import url
+from . import views
+
+urlpatterns = [
+    url(r'^$', views.blog.index),
+    url(r'^archive/$', views.blog.archive),
+
+
+(七)Nested arguments
+(八)Passing extra options to view functions
+
+from django.conf.urls import url
+from . import views
+
+urlpatterns = [
+    url(r'^blog/(?P<year>[0-9]{4})/$', views.year_archive, {'foo': 'bar'}),
+]
+# In this example, for a request to /blog/2005/, Django will call views.year_archive(request, year='2005', foo='bar').
+
+# to pass metadata and options to views.
+
+二.Writing views
+# A view function, or view for short, is simply a Python function that takes a Web request and returns a Web response
+# his response can be the HTML contents of a Web page, or a redirect, or a 404 error, or an XML document, or an image . . . or anything, really
+
+(一)例子
+ # Each view function takes an HttpRequest object as its first parameter, which is typically named request
+ # The view returns an HttpResponse object that contains the generated response. Each view function is responsible for returning an HttpResponse object.
+(二)Returning errors
+from django.http import HttpResponse, HttpResponseNotFound
+
+def my_view(request):
+    # ...
+    if foo:
+        return HttpResponseNotFound('<h1>Page not found</h1>')
+    else:
+        return HttpResponse('<h1>Page was found</h1>')
+
+
+from django.http import HttpResponse
+
+def my_view(request):
+    # ...
+
+    # Return a "created" (201) response code.
+    return HttpResponse(status=201)
+
+(三)The Http404 exception
+from django.http import Http404
+from django.shortcuts import render
+from polls.models import Poll
+
+def detail(request, poll_id):
+    try:
+        p = Poll.objects.get(pk=poll_id)
+    except Poll.DoesNotExist:
+        raise Http404("Poll does not exist")
+    return render(request, 'polls/detail.html', {'poll': p})
+
+(四)Customizing error views
+handler404 = 'mysite.views.my_custom_page_not_found_view'
+handler500 = 'mysite.views.my_custom_error_view'
+handler403 = 'mysite.views.my_custom_permission_denied_view'
+handler400 = 'mysite.views.my_custom_bad_request_view'
+
+三.View decorators
+(一)Allowed HTTP methods
+from django.views.decorators.http import require_http_methods
+
+@require_http_methods(["GET", "POST"])
+def my_view(request):
+    # I can assume now that only GET or POST requests make it this far
+    # ...
+    pass
+
+ # These decorators will return a django.http.HttpResponseNotAllowed if the conditions are not met.
+ (二)Conditional view processing¶
+
+四.File Uploads
+
+from django import forms
+
+class UploadFileForm(forms.Form):
+    title = forms.CharField(max_length=50)
+    file = forms.FileField()
+
+# A view handling this form will receive the file data in request.FILES, which is a dictionary containing a key for each FileField (or ImageField, or other FileField subclass) in the form. So the data from the above form would be accessible as request.FILES['file'].
+
+
+from django.http import HttpResponseRedirect
+from django.shortcuts import render
+from .forms import UploadFileForm
+
+# Imaginary function to handle an uploaded file.
+from somewhere import handle_uploaded_file
+
+def upload_file(request):
+    if request.method == 'POST':
+        form = UploadFileForm(request.POST, request.FILES)
+        if form.is_valid():
+            handle_uploaded_file(request.FILES['file'])
+            return HttpResponseRedirect('/success/url/')
+    else:
+        form = UploadFileForm()
+    return render(request, 'upload.html', {'form': form})
+
+五.Django shortcut functions
+from django.http import HttpResponse
+from django.template import loader
+
+def my_view(request):
+    # View code here...
+    t = loader.get_template('myapp/index.html')
+    c = {'foo': 'bar'}
+    return HttpResponse(t.render(c, request), content_type='application/xhtml+xml')
+
+from django.shortcuts import render
+
+def my_view(request):
+    # View code here...
+    return render(request, 'myapp/index.html', {
+        'foo': 'bar',
+    }, content_type='application/xhtml+xml')
+
+
+from django.shortcuts import redirect
+
+def my_view(request):
+    ...
+    object = MyModel.objects.get(...)
+    return redirect(object)
+
+def my_view(request):
+    ...
+    return redirect('some-view-name', foo='bar')
+
+def my_view(request):
+    ...
+    return redirect('/some/url/')
+
+def my_view(request):
+    ...
+    return redirect('https://example.com/')
+
+          
